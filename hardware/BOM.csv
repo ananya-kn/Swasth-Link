@@ -1,0 +1,11 @@
+component,part,qty,source,approx_inr
+MCU,ESP32-WROOM DevKit,1,local,450
+Pulse oximeter,MAX30102 module,1,local,250
+IR temperature,MLX90614 (GY-906),1,local,1000
+Microphone (voice notes),INMP441 I2S module,1,local,300
+GSM,SIM800L module + antenna,1,local,350
+GPS,NEO-6M module,1,local,400
+Display,0.96 in SSD1306 OLED,1,local,200
+Battery and charger,3.7 V 2000 mAh Li-ion + TP4056 USB-C (with protection),1,local,500
+Enclosure,3D-printed body + back cover + TPU bumper,1,in-house,300
+Misc,buzzer + SOS/MEASURE buttons + LED + wires + PCB + caps (1000 uF near SIM800L),1,local,400
