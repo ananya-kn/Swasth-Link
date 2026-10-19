@@ -31,4 +31,5 @@ Optional: `ALERT_WEBHOOK=https://...` posts every escalation alert as JSON (hook
 `triage/` reference logic | `tests/` cross-language vectors + server smoke test | `server/` Express API, doctor dashboard, worker PWA | `firmware/` ESP32 handheld | `cad/` CadQuery -> STEP/STL | `docs/` rules, privacy, validation, limits, renders | `hardware/` BOM, pinout
 
 Read `docs/known_limits.md` and `docs/triage_rules.md` before presenting. This is a screening aid, not a diagnostic device.
-# Swasth-Link
+
+> Starter code was generated with AI assistance (Claude) and is being adapted, tested and extended by the team on real hardware.
