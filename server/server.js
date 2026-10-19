@@ -13,6 +13,7 @@ const STEPS = (process.env.ESC_STEPS || '0,300,600').split(',').map(Number); // 
 const PUBLIC_URL = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
 const DB = path.join(__dirname, 'data', 'cases.json');
 
+fs.mkdirSync(path.dirname(DB), { recursive: true });
 const store = { cases: {}, alerts: [] };
 try { Object.assign(store, JSON.parse(fs.readFileSync(DB, 'utf8'))); } catch (e) { /* first run */ }
 let saveT = null;
