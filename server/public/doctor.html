@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwasthLink PHC</title>
+<style>
+:root{--n:#1E3A8A;--g:#059669;--r:#DC2626;--a:#D97706;--bg:#F1F5F9;--bd:#E2E8F0;--t:#334155}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--t)}
+header{background:#0F172A;color:#fff;padding:12px 18px;display:flex;justify-content:space-between}
+#wrap{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px;height:calc(100vh - 48px)}
+.panel{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;overflow:auto}
+.item{border:2px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer}.item.sel{outline:3px solid #93C5FD}
+.U{border-color:var(--r);background:#FEF2F2}.M{border-color:var(--a);background:#FFFBEB}.R{border-color:var(--g);background:#F0FDF4}.X{border-color:#94A3B8;background:#F8FAFC}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;color:#fff;font-size:12px;font-weight:700}
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}.v{border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center}.v b{font-size:28px;display:block}
+button{padding:10px 14px;border:0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;margin-right:6px}textarea{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px}
+canvas{width:100%;height:120px;border:1px solid var(--bd);border-radius:8px}
+#toast{position:fixed;right:16px;bottom:16px;background:var(--r);color:#fff;padding:12px 16px;border-radius:10px;display:none;max-width:360px}
+</style></head><body>
+<header><b>SwasthLink | PHC doctor view</b><span id="conn">connecting...</span></header>
+<div id="wrap"><div class="panel" id="list"></div><div class="panel" id="detail"><p>Select a case.</p></div></div><div id="toast"></div>
+<script>
+const KEY=localStorage.sl_dkey||(localStorage.sl_dkey=prompt('Doctor API key')||''),H={'x-api-key':KEY,'content-type':'application/json'};
+const $=id=>document.getElementById(id);let cases={},sel=location.hash.slice(1)||null;
+const CL={URGENT:'U',MONITOR:'M',ROUTINE:'R',RETAKE:'X'},COL={URGENT:'#DC2626',MONITOR:'#D97706',ROUTINE:'#059669',RETAKE:'#64748B'},RANK={URGENT:0,MONITOR:1,RETAKE:2,ROUTINE:3};
+const ago=t=>{const s=(Date.now()-new Date(t))/1000;return s<90?Math.round(s)+' s ago':s<5400?Math.round(s/60)+' min ago':Math.round(s/3600)+' h ago'};
+function list(){const a=Object.values(cases).sort((x,y)=>RANK[x.level]-RANK[y.level]||y.received_at.localeCompare(x.received_at));
+ $('list').innerHTML=a.map(c=>`<div class="item ${CL[c.level]} ${c.case_id===sel?'sel':''}" data-id="${c.case_id}"><span class="pill" style="background:${COL[c.level]}">${c.level}</span> <b>${c.case_id}</b><br><small>${c.vitals.spo2??'-'}% | ${c.vitals.pulse??'-'} bpm | ${c.vitals.temp_c??'-'} C | ${ago(c.received_at)}${c.acked_at?' | seen':''}${c.level==='URGENT'&&!c.acked_at?' | WAITING':''}</small></div>`).join('')||'<p>No cases yet.</p>';
+ document.querySelectorAll('.item').forEach(e=>e.onclick=()=>{sel=e.dataset.id;list();detail()})}
+async function detail(){const c=cases[sel];if(!c)return;
+ $('detail').innerHTML=`<h2 style="margin:0">Case ${c.case_id} <span class="pill" style="background:${COL[c.level]}">${c.level}</span></h2>
+ <small>${c.age_group} | received ${ago(c.received_at)} | patient code ${c.patient_ref||'-'} | ${c.location?`<a target="_blank" href="https://maps.google.com/?q=${c.location.lat},${c.location.lng}">location</a>`:'no location'}</small>
+ <div class="big"><div class="v"><b>${c.vitals.spo2??'-'}</b>SpO2 %</div><div class="v"><b>${c.vitals.pulse??'-'}</b>pulse /min</div><div class="v"><b>${c.vitals.temp_c??'-'}</b>temp C</div></div>
+ <h4>Why flagged (score ${c.triage.score})</h4><ul>${c.triage.reasons.map(r=>`<li>${r}</li>`).join('')||'<li>No abnormal reading</li>'}</ul>
+ <h4>Trend</h4><canvas id="cv" width="800" height="240"></canvas>
+ <h4>Respond</h4><textarea id="adv" rows="3" placeholder="Advice to the ASHA worker">${c.advice?c.advice.text:''}</textarea><br><br>
+ <button style="background:#059669" id="ack">Acknowledge</button><button style="background:#1E3A8A" id="send">Send advice</button><button style="background:#DC2626" id="amb">Arrange ambulance</button>
+ <p><small>${c.acked_at?'Acknowledged '+ago(c.acked_at)+' by '+c.acked_by:'Not yet acknowledged'}${c.escalation_stage!==null?' | escalation stage '+c.escalation_stage:''}${c.ambulance?' | ambulance requested':''}</small></p>`;
+ const post=(p,b)=>fetch('/api/cases/'+c.case_id+'/'+p,{method:'POST',headers:H,body:JSON.stringify(b)});
+ $('ack').onclick=()=>post('ack',{by:'PHC doctor'});$('send').onclick=()=>post('advice',{text:$('adv').value,by:'PHC doctor'});$('amb').onclick=()=>post('ambulance',{by:'PHC doctor'});
+ if(c.patient_ref){const tr=await(await fetch('/api/patients/'+encodeURIComponent(c.patient_ref)+'/trend',{headers:H})).json();spark(tr)}}
+function spark(tr){const cv=$('cv');if(!cv)return;const g=cv.getContext('2d'),W=cv.width,Hh=cv.height;g.clearRect(0,0,W,Hh);
+ [['spo2','#DC2626',80,100],['pulse','#D97706',40,160]].forEach(([k,col,lo,hi])=>{g.strokeStyle=col;g.lineWidth=3;g.beginPath();tr.forEach((p,i)=>{if(p[k]==null)return;const x=tr.length<2?W/2:i/(tr.length-1)*(W-20)+10,y=Hh-(p[k]-lo)/(hi-lo)*Hh;i?g.lineTo(x,y):g.moveTo(x,y);g.fillStyle=col;g.fillRect(x-3,y-3,6,6)});g.stroke()});
+ g.fillStyle='#64748B';g.font='18px sans-serif';g.fillText('red: SpO2   orange: pulse',10,22)}
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',9000)}
+fetch('/api/cases',{headers:H}).then(r=>r.json()).then(a=>{a.forEach(c=>cases[c.case_id]=c);list();detail()});
+function connect(){const es=new EventSource('/api/stream?key='+encodeURIComponent(KEY));
+ es.onopen=()=>$('conn').textContent='live';es.onerror=()=>$('conn').textContent='reconnecting...';
+ es.addEventListener('case',e=>{const c=JSON.parse(e.data);cases[c.case_id]=c;list();if(c.case_id===sel)detail()});
+ es.addEventListener('alert',e=>{const a=JSON.parse(e.data);toast('ALERT stage '+a.stage+': '+a.text);try{new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=').play()}catch(_){}})}
+connect();setInterval(list,30000);
+</script></body></html>

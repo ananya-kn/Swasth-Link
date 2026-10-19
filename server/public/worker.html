@@ -1,0 +1,77 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1E3A8A"><title>SwasthLink</title>
+<style>
+:root{--n:#1E3A8A;--g:#059669;--r:#DC2626;--a:#D97706;--bg:#F8FAFC;--bd:#E2E8F0;--t:#334155}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:17px}
+header{background:var(--n);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+select,input,button{font:inherit}main{padding:12px;max-width:560px;margin:auto}
+.card{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+h3{margin:0 0 8px;color:var(--n)}.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+label{font-size:13px;display:block;margin-bottom:3px}input[type=number],input[type=text]{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px}
+.sym{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.sym button{padding:12px 8px;border:2px solid var(--bd);border-radius:12px;background:#fff;text-align:left}
+.sym button.on{border-color:var(--r);background:#FEF2F2}.sym span{font-size:26px;display:block}
+.btn{width:100%;padding:14px;border:0;border-radius:12px;background:var(--n);color:#fff;font-weight:700;margin-top:8px}.btn.alt{background:#fff;color:var(--n);border:2px solid var(--n)}
+.res{border-radius:14px;padding:16px;color:#fff;font-weight:700}.res h2{margin:0;font-size:30px}.res ul{margin:8px 0 0;padding-left:20px;font-weight:500}
+.seg{display:flex;gap:8px}.seg button{flex:1;padding:10px;border:2px solid var(--bd);border-radius:10px;background:#fff}.seg .on{border-color:var(--n);background:#EEF2FF}
+a.call{display:block;text-align:center;background:var(--r);color:#fff;padding:16px;border-radius:12px;font-weight:800;text-decoration:none;font-size:22px;margin-top:8px}
+small{color:#64748B}#net{font-size:12px}
+</style></head><body>
+<header><b id="t-title">SwasthLink</b><span><span id="net"></span> <select id="lang"><option value="en">English</option><option value="hi">हिन्दी</option><option value="kn">ಕನ್ನಡ</option></select></span></header>
+<main>
+<div class="card"><h3 id="t-vitals"></h3>
+<button class="btn alt" id="ble" style="margin:0 0 10px"></button>
+<div class="row"><div><label id="l-spo2"></label><input id="spo2" type="number" inputmode="decimal"></div><div><label id="l-pulse"></label><input id="pulse" type="number" inputmode="decimal"></div><div><label id="l-temp"></label><input id="temp" type="number" step="0.1" inputmode="decimal"></div></div>
+<small id="t-hint"></small></div>
+<div class="card"><h3 id="t-symptoms"></h3><div class="sym" id="sym"></div>
+<div class="seg" style="margin-top:10px"><button id="adult" class="on"></button><button id="child"></button></div></div>
+<div class="card"><label id="l-code"></label><input id="code" type="text" placeholder="e.g. H12-P3"><small id="t-nonames"></small></div>
+<button class="btn" id="calc"></button>
+<div id="result" style="display:none;margin-top:12px"></div>
+<div id="status" class="card" style="display:none;margin-top:12px"></div>
+</main>
+<script src="triage.js"></script>
+<script>
+const T={
+en:{title:'SwasthLink',vitals:'Vitals',connect:'Connect device (Bluetooth)',spo2:'SpO2 %',pulse:'Pulse /min',temp:'Temp C',hint:'Leave a box empty if the reading was poor: the app will ask to retake.',symptoms:'Any of these now?',adult:'Adult',child:'Child',code:'Patient code (no names)',nonames:'Use a household code, not a name.',calc:'Check',ROUTINE:'ROUTINE',MONITOR:'MONITOR',URGENT:'URGENT',RETAKE:'RETAKE READING',send:'Send to PHC',queued:'Saved. Will send when network returns.',sent:'Sent to PHC doctor.',ack:'Doctor has seen this case.',advice:'Doctor advice',call108:'CALL 108',prompt:'No reply yet: call 108 now.',online:'online',offline:'offline',
+ d:{breathless:'Breathless',chest_pain:'Chest pain',convulsion:'Fits',unconscious:'Unconscious / drowsy',bleeding_pregnancy:'Bleeding in pregnancy',severe_headache_vision:'Severe headache, blurred vision',severe_abdominal_pain:'Severe belly pain',cannot_drink_feed:'Cannot drink / feed'}},
+hi:{title:'स्वास्थलिंक',vitals:'जाँच के आँकड़े',connect:'डिवाइस जोड़ें (ब्लूटूथ)',spo2:'SpO2 %',pulse:'नाड़ी /मिनट',temp:'तापमान C',hint:'अगर रीडिंग खराब थी तो खाना खाली छोड़ें: ऐप दोबारा जाँच कहेगा।',symptoms:'क्या अभी इनमें से कुछ है?',adult:'वयस्क',child:'बच्चा',code:'मरीज़ कोड (नाम नहीं)',nonames:'नाम नहीं, घर का कोड लिखें।',calc:'जाँचें',ROUTINE:'सामान्य',MONITOR:'निगरानी',URGENT:'आपातकाल',RETAKE:'दोबारा जाँचें',send:'PHC को भेजें',queued:'सहेजा गया। नेटवर्क आने पर भेजा जाएगा।',sent:'PHC डॉक्टर को भेज दिया।',ack:'डॉक्टर ने केस देख लिया है।',advice:'डॉक्टर की सलाह',call108:'108 पर कॉल करें',prompt:'जवाब नहीं आया: अभी 108 पर कॉल करें।',online:'ऑनलाइन',offline:'ऑफ़लाइन',
+ d:{breathless:'साँस फूलना',chest_pain:'सीने में दर्द',convulsion:'दौरे',unconscious:'बेहोश / बहुत सुस्त',bleeding_pregnancy:'गर्भावस्था में रक्तस्राव',severe_headache_vision:'तेज़ सिरदर्द, धुंधला दिखना',severe_abdominal_pain:'पेट में तेज़ दर्द',cannot_drink_feed:'पी/खा नहीं पा रहा'}},
+kn:{title:'ಸ್ವಾಸ್ಥ್‌ಲಿಂಕ್',vitals:'ಆರೋಗ್ಯ ಸೂಚಕಗಳು',connect:'ಸಾಧನ ಜೋಡಿಸಿ (ಬ್ಲೂಟೂತ್)',spo2:'SpO2 %',pulse:'ನಾಡಿ /ನಿಮಿಷ',temp:'ತಾಪಮಾನ C',hint:'ರೀಡಿಂಗ್ ಸರಿಯಿಲ್ಲದಿದ್ದರೆ ಖಾಲಿ ಬಿಡಿ: ಆ್ಯಪ್ ಮತ್ತೆ ಪರೀಕ್ಷಿಸಲು ಹೇಳುತ್ತದೆ.',symptoms:'ಈಗ ಇವುಗಳಲ್ಲಿ ಏನಾದರೂ ಇದೆಯೇ?',adult:'ವಯಸ್ಕ',child:'ಮಗು',code:'ರೋಗಿ ಕೋಡ್ (ಹೆಸರು ಬೇಡ)',nonames:'ಹೆಸರಲ್ಲ, ಮನೆಯ ಕೋಡ್ ಬಳಸಿ.',calc:'ಪರೀಕ್ಷಿಸಿ',ROUTINE:'ಸಾಮಾನ್ಯ',MONITOR:'ನಿಗಾ',URGENT:'ತುರ್ತು',RETAKE:'ಮತ್ತೆ ಪರೀಕ್ಷಿಸಿ',send:'PHC ಗೆ ಕಳುಹಿಸಿ',queued:'ಉಳಿಸಲಾಗಿದೆ. ನೆಟ್‌ವರ್ಕ್ ಬಂದಾಗ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.',sent:'PHC ವೈದ್ಯರಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.',ack:'ವೈದ್ಯರು ಪ್ರಕರಣವನ್ನು ನೋಡಿದ್ದಾರೆ.',advice:'ವೈದ್ಯರ ಸಲಹೆ',call108:'108 ಗೆ ಕರೆ ಮಾಡಿ',prompt:'ಉತ್ತರ ಇಲ್ಲ: ಈಗಲೇ 108 ಗೆ ಕರೆ ಮಾಡಿ.',online:'ಆನ್‌ಲೈನ್',offline:'ಆಫ್‌ಲೈನ್',
+ d:{breathless:'ಉಸಿರಾಟದ ತೊಂದರೆ',chest_pain:'ಎದೆ ನೋವು',convulsion:'ಸೆಳೆತ',unconscious:'ಪ್ರಜ್ಞೆ ಇಲ್ಲ / ತುಂಬಾ ಜಡ',bleeding_pregnancy:'ಗರ್ಭಾವಸ್ಥೆಯಲ್ಲಿ ರಕ್ತಸ್ರಾವ',severe_headache_vision:'ತೀವ್ರ ತಲೆನೋವು, ಮಂಜಾದ ದೃಷ್ಟಿ',severe_abdominal_pain:'ಹೊಟ್ಟೆ ತೀವ್ರ ನೋವು',cannot_drink_feed:'ಕುಡಿಯಲು/ತಿನ್ನಲು ಆಗುತ್ತಿಲ್ಲ'}}};
+const ICON={breathless:'😮‍💨',chest_pain:'💔',convulsion:'⚡',unconscious:'😴',bleeding_pregnancy:'🩸',severe_headache_vision:'🤕',severe_abdominal_pain:'😣',cannot_drink_feed:'🍼'};
+const COL={ROUTINE:'#059669',MONITOR:'#D97706',URGENT:'#DC2626',RETAKE:'#64748B'};
+const SVC='6e400001-b5a3-f393-e0a9-e50e3c8e0001',CHR='6e400001-b5a3-f393-e0a9-e50e3c8e0002';
+const $=id=>document.getElementById(id);let lang=localStorage.sl_lang||'en',signs=new Set(),age='adult',last=null,pollT=null;
+const KEY=()=>localStorage.sl_key||(localStorage.sl_key=prompt('API key')||'');
+const WORKER=()=>localStorage.sl_worker||(localStorage.sl_worker=prompt('Worker ID')||'W1');
+function ui(){const t=T[lang];document.documentElement.lang=lang;$('lang').value=lang;
+ [['title','t-title'],['vitals','t-vitals'],['spo2','l-spo2'],['pulse','l-pulse'],['temp','l-temp'],['hint','t-hint'],['symptoms','t-symptoms'],['code','l-code'],['nonames','t-nonames'],['calc','calc'],['adult','adult'],['child','child'],['connect','ble']].forEach(([k,id])=>$(id).textContent=t[k]);
+ $('sym').innerHTML=Object.keys(t.d).map(k=>`<button data-k="${k}" class="${signs.has(k)?'on':''}"><span>${ICON[k]}</span>${t.d[k]}</button>`).join('');
+ $('sym').querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=b.dataset.k;signs.has(k)?signs.delete(k):signs.add(k);b.classList.toggle('on')});net()}
+function net(){$('net').textContent=navigator.onLine?T[lang].online:T[lang].offline}
+$('lang').onchange=e=>{lang=localStorage.sl_lang=e.target.value;ui();last&&show(last)};
+$('adult').onclick=()=>{age='adult';$('adult').classList.add('on');$('child').classList.remove('on')};
+$('child').onclick=()=>{age='child';$('child').classList.add('on');$('adult').classList.remove('on')};
+const num=id=>$(id).value===''?null:Number($(id).value);
+$('ble').onclick=async()=>{try{const d=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'SwasthLink'}],optionalServices:[SVC]});
+ const ch=await(await(await d.gatt.connect()).getPrimaryService(SVC)).getCharacteristic(CHR);await ch.startNotifications();
+ ch.addEventListener('characteristicvaluechanged',e=>{const j=JSON.parse(new TextDecoder().decode(e.target.value));
+  $('spo2').value=j.sq===0?'':j.spo2;$('pulse').value=j.sq===0?'':j.pulse;$('temp').value=j.temp_c??''})}catch(e){alert('Bluetooth: '+e.message)}};
+function show(c){last=c;const t=T[lang],r=c.triage,box=$('result');box.style.display='block';
+ box.innerHTML=`<div class="res" style="background:${COL[r.level]}"><h2>${t[r.level]}</h2><ul>${r.reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+ ${r.level==='URGENT'?`<a class="call" href="tel:108">📞 ${t.call108}</a>`:''}
+ ${r.level==='RETAKE'?'':`<button class="btn" id="send">${t.send}</button>`}`;
+ const s=$('send');if(s)s.onclick=()=>enqueue(c)}
+$('calc').onclick=()=>{const c={case_id:WORKER()+'-'+Date.now().toString(36),patient_ref:$('code').value||null,worker_id:WORKER(),vitals:{spo2:num('spo2'),pulse:num('pulse'),temp_c:num('temp')},symptoms:[...signs],age_group:age,captured_at:new Date().toISOString(),location:null};
+ c.triage=SwasthTriage.triage({spo2:c.vitals.spo2,pulse:c.vitals.pulse,temp_c:c.vitals.temp_c,danger_signs:c.symptoms,age_group:age});
+ navigator.geolocation&&navigator.geolocation.getCurrentPosition(p=>c.location={lat:+p.coords.latitude.toFixed(5),lng:+p.coords.longitude.toFixed(5)},()=>{},{timeout:4000});show(c)};
+const Q=()=>JSON.parse(localStorage.sl_queue||'[]');const setQ=q=>localStorage.sl_queue=JSON.stringify(q);
+function enqueue(c){const{triage:_,...body}=c;setQ(Q().concat(body));$('status').style.display='block';$('status').textContent=T[lang].queued;flush(c.case_id)}
+async function flush(watch){const q=Q();if(!q.length||!navigator.onLine)return;const left=[];
+ for(const c of q){try{const r=await fetch('/api/cases',{method:'POST',headers:{'content-type':'application/json','x-api-key':KEY()},body:JSON.stringify(c)});if(!r.ok)throw 0;if(c.case_id===watch)track(c.case_id)}catch(e){left.push(c)}}setQ(left)}
+function track(id){clearInterval(pollT);const t=T[lang],st=$('status');st.style.display='block';st.textContent=t.sent;
+ pollT=setInterval(async()=>{try{const c=await(await fetch('/api/cases/'+id,{headers:{'x-api-key':KEY()}})).json();let h=t.sent;
+  if(c.acked_at)h=t.ack;if(c.advice)h+=`<br><b>${t.advice}:</b> ${c.advice.text}`;if(c.prompt_108&&!c.acked_at)h=`<b>${t.prompt}</b><a class="call" href="tel:108">📞 ${t.call108}</a>`;st.innerHTML=h;if(c.advice)clearInterval(pollT)}catch(e){}},8000)}
+addEventListener('online',()=>{net();flush()});addEventListener('offline',net);setInterval(()=>flush(),15000);
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');ui();
+</script></body></html>
