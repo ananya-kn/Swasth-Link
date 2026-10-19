@@ -1,0 +1,22 @@
+[
+ {"name":"all normal","in":{"spo2":97,"pulse":78,"temp_c":36.8},"score":0,"level":"ROUTINE"},
+ {"name":"worked example from deck","in":{"spo2":89,"pulse":124,"temp_c":38.9,"danger_signs":["breathless"]},"score":6,"level":"URGENT"},
+ {"name":"spo2 boundary 96","in":{"spo2":96,"pulse":70,"temp_c":37.0},"score":0,"level":"ROUTINE"},
+ {"name":"spo2 95","in":{"spo2":95,"pulse":70,"temp_c":37.0},"score":1,"level":"ROUTINE"},
+ {"name":"spo2 93 + hr 100 + temp 38.5","in":{"spo2":93,"pulse":100,"temp_c":38.5},"score":4,"level":"MONITOR"},
+ {"name":"single red spo2 91","in":{"spo2":91,"pulse":70,"temp_c":37.0},"score":3,"level":"URGENT"},
+ {"name":"pulse 131 red","in":{"spo2":98,"pulse":131,"temp_c":37.0},"score":3,"level":"URGENT"},
+ {"name":"pulse 130","in":{"spo2":98,"pulse":130,"temp_c":37.0},"score":2,"level":"ROUTINE"},
+ {"name":"pulse 40 red","in":{"spo2":98,"pulse":40,"temp_c":37.0},"score":3,"level":"URGENT"},
+ {"name":"pulse 45","in":{"spo2":98,"pulse":45,"temp_c":37.0},"score":1,"level":"ROUTINE"},
+ {"name":"temp 39.1","in":{"spo2":98,"pulse":70,"temp_c":39.1},"score":2,"level":"ROUTINE"},
+ {"name":"temp 35.0 red","in":{"spo2":98,"pulse":70,"temp_c":35.0},"score":3,"level":"URGENT"},
+ {"name":"temp 35.5","in":{"spo2":98,"pulse":70,"temp_c":35.5},"score":1,"level":"ROUTINE"},
+ {"name":"danger sign alone overrides","in":{"spo2":99,"pulse":72,"temp_c":36.9,"danger_signs":["bleeding_pregnancy"]},"score":0,"level":"URGENT"},
+ {"name":"score 5 urgent","in":{"spo2":92,"pulse":115,"temp_c":38.6},"score":5,"level":"URGENT"},
+ {"name":"score 4 monitor","in":{"spo2":94,"pulse":95,"temp_c":39.4},"score":4,"level":"MONITOR"},
+ {"name":"missing spo2 normal others -> retake","in":{"spo2":null,"pulse":72,"temp_c":36.8},"score":0,"level":"RETAKE"},
+ {"name":"missing spo2 but abnormal others","in":{"spo2":null,"pulse":120,"temp_c":38.8},"score":3,"level":"MONITOR"},
+ {"name":"child any abnormal -> monitor","in":{"spo2":95,"pulse":72,"temp_c":36.8,"age_group":"child"},"score":1,"level":"MONITOR"},
+ {"name":"unknown danger code ignored","in":{"spo2":98,"pulse":72,"temp_c":36.8,"danger_signs":["nonsense"]},"score":0,"level":"ROUTINE"}
+]
